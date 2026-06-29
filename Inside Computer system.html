@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission: Cyber Suraksha — Inside a Computer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1326;
+    --bg-2:#0A0F1F;
+    --surface:#161D38;
+    --surface-2:#1D2647;
+    --line:#2A3358;
+    --marigold:#FFB23E;
+    --marigold-dim:#C9892D;
+    --teal:#3DD3C0;
+    --teal-dim:#1f7d72;
+    --rose:#FF7BA9;
+    --text:#EBE9F4;
+    --muted:#8B93B6;
+    --muted-2:#5C648A;
+    --good:#3DD3C0;
+    --bad:#FF6B6B;
+    --radius:14px;
+    --shadow:0 18px 50px -20px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1100px 600px at 12% -8%, rgba(255,178,62,.10), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(61,211,192,.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.6;
+    min-height:100vh;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px}
+
+  /* ---------- Top progress bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(10,15,31,.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar__inner{
+    max-width:920px;margin:0 auto;padding:11px 18px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:700;letter-spacing:.2px}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--marigold);box-shadow:0 0 12px var(--marigold);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .progress{flex:1;min-width:140px;height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .progress__fill{height:100%;width:0%;background:linear-gradient(90deg,var(--marigold),var(--teal));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .flagcount{font-family:'JetBrains Mono';font-size:13px;color:var(--teal);white-space:nowrap}
+  .flagcount b{color:var(--text)}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:54px 0 30px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono';font-size:12.5px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--marigold);border:1px solid var(--marigold-dim);
+    padding:6px 12px;border-radius:99px;background:rgba(255,178,62,.07);
+  }
+  .hero h1{
+    font-family:'Space Grotesk';font-weight:700;line-height:1.08;
+    font-size:clamp(32px,7vw,56px);margin:18px 0 12px;letter-spacing:-.5px;
+  }
+  .hero h1 .accent{color:var(--marigold)}
+  .hero p{color:var(--muted);max-width:560px;margin:0 auto;font-size:17px}
+  .hero__meta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+  .chip{
+    font-family:'JetBrains Mono';font-size:12.5px;color:var(--muted);
+    background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:99px;
+  }
+  .chip b{color:var(--text)}
+  .mission-note{
+    margin:30px auto 0;max-width:620px;text-align:left;
+    background:linear-gradient(180deg,var(--surface),var(--bg-2));
+    border:1px solid var(--line);border-left:3px solid var(--rose);
+    border-radius:var(--radius);padding:18px 20px;color:var(--muted);font-size:15px;
+  }
+  .mission-note b{color:var(--text)}
+
+  /* ---------- Task blocks ---------- */
+  .task{
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:26px 24px;margin:22px 0;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .task::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--marigold),var(--teal));opacity:.5}
+  .task__head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .task__num{
+    font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--bg);
+    background:var(--marigold);width:34px;height:34px;border-radius:9px;
+    display:grid;place-items:center;flex-shrink:0;margin-top:2px;
+  }
+  .task__title{font-family:'Space Grotesk';font-weight:600;font-size:22px;letter-spacing:-.2px}
+  .task__sub{color:var(--muted);font-size:14.5px;margin:2px 0 18px}
+  .task__body p{color:var(--muted);margin-bottom:14px;font-size:15.5px}
+  .task__body strong{color:var(--text)}
+
+  /* ---------- Component explorer ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:13px;margin:6px 0 4px}
+  .card{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;cursor:pointer;min-height:128px;position:relative;
+    transition:transform .15s ease,border-color .2s ease;text-align:left;color:inherit;font:inherit;
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--marigold-dim)}
+  .card:focus-visible{outline:2px solid var(--marigold);outline-offset:2px}
+  .card.is-open{border-color:var(--teal);background:linear-gradient(180deg,var(--surface-2),#16233f)}
+  .card__icon{font-size:26px;line-height:1}
+  .card__name{font-family:'Space Grotesk';font-weight:600;font-size:16px;margin:8px 0 2px}
+  .card__role{font-family:'JetBrains Mono';font-size:11.5px;color:var(--marigold);text-transform:uppercase;letter-spacing:.5px}
+  .card__detail{font-size:13.5px;color:var(--muted);margin-top:9px;display:none}
+  .card.is-open .card__detail{display:block;animation:fade .3s ease}
+  .card__tag{position:absolute;top:12px;right:12px;font-size:11px;color:var(--muted-2);font-family:'JetBrains Mono'}
+  .card.is-open .card__tag{color:var(--teal)}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .hint{font-size:13px;color:var(--muted-2);font-family:'JetBrains Mono';margin-top:14px}
+
+  /* ---------- Matching game ---------- */
+  .match__q{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;text-align:center;margin-bottom:14px;
+  }
+  .match__bodypart{font-size:40px;margin-bottom:4px}
+  .match__prompt{font-family:'Space Grotesk';font-size:18px;font-weight:500}
+  .match__prompt span{color:var(--marigold)}
+  .opts{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+  .opt{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:11px;
+    padding:13px;font:inherit;color:var(--text);cursor:pointer;text-align:left;
+    transition:border-color .15s,background .15s;display:flex;align-items:center;gap:9px;
+  }
+  .opt:hover{border-color:var(--marigold-dim)}
+  .opt:focus-visible{outline:2px solid var(--marigold);outline-offset:2px}
+  .opt.correct{border-color:var(--good);background:rgba(61,211,192,.12)}
+  .opt.wrong{border-color:var(--bad);background:rgba(255,107,107,.12)}
+  .opt:disabled{cursor:default;opacity:.85}
+  .opt .ic{font-size:20px}
+  .match__feedback{min-height:24px;margin-top:13px;font-size:14.5px;font-family:'JetBrains Mono';text-align:center}
+  .match__feedback.good{color:var(--good)}
+  .match__feedback.bad{color:var(--bad)}
+  .match__score{font-family:'JetBrains Mono';font-size:13px;color:var(--muted);text-align:center;margin-top:6px}
+
+  /* ---------- Boot terminal ---------- */
+  .term{
+    background:#06091A;border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;font-family:'JetBrains Mono';margin:4px 0 6px;
+  }
+  .term__bar{display:flex;align-items:center;gap:7px;padding:10px 14px;background:#0B0F22;border-bottom:1px solid var(--line)}
+  .term__bar .b{width:11px;height:11px;border-radius:50%}
+  .b.r{background:#FF6B6B}.b.y{background:var(--marigold)}.b.g{background:var(--teal)}
+  .term__bar .t{margin-left:8px;font-size:12px;color:var(--muted-2)}
+  .term__screen{padding:18px;min-height:230px;font-size:13.5px;line-height:1.8}
+  .term__line{white-space:pre-wrap}
+  .term__line .ok{color:var(--teal)}
+  .term__line .step{color:var(--marigold)}
+  .term__line .dim{color:var(--muted-2)}
+  .term__line .body{color:var(--rose)}
+  .cursor{display:inline-block;width:9px;height:16px;background:var(--teal);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;justify-content:center;
+    font-family:'Space Grotesk';font-weight:600;font-size:15px;cursor:pointer;
+    border:none;border-radius:11px;padding:13px 22px;color:var(--bg);
+    background:var(--marigold);transition:transform .12s,box-shadow .2s;
+    box-shadow:0 8px 24px -10px var(--marigold);
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+  .btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+  .btn--ghost{background:transparent;color:var(--text);border:1px solid var(--line);box-shadow:none}
+  .btn--ghost:hover{border-color:var(--marigold)}
+  .btn--power{background:var(--teal);box-shadow:0 8px 24px -10px var(--teal)}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center}
+
+  /* ---------- Flag reveal ---------- */
+  .flag{
+    margin-top:18px;border:1px dashed var(--teal-dim);background:rgba(61,211,192,.06);
+    border-radius:var(--radius);padding:15px 18px;display:none;align-items:center;gap:12px;
+  }
+  .flag.show{display:flex;animation:fade .4s ease}
+  .flag__ico{font-size:24px}
+  .flag__txt{font-family:'JetBrains Mono';font-size:14px}
+  .flag__txt b{color:var(--teal);user-select:all}
+  .flag__txt span{display:block;color:var(--muted);font-size:12px;margin-top:2px;font-family:'Inter'}
+
+  /* ---------- Quiz ---------- */
+  .quiz__q{margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .quiz__q:last-of-type{border-bottom:none}
+  .quiz__qtext{font-family:'Space Grotesk';font-weight:500;font-size:16.5px;margin-bottom:12px}
+  .quiz__qtext .qn{color:var(--marigold);font-family:'JetBrains Mono';margin-right:8px}
+  .quiz__opt{
+    display:flex;align-items:flex-start;gap:11px;padding:12px 14px;margin-bottom:8px;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;cursor:pointer;
+    transition:border-color .15s;font-size:14.5px;
+  }
+  .quiz__opt:hover{border-color:var(--marigold-dim)}
+  .quiz__opt input{margin-top:4px;accent-color:var(--marigold);flex-shrink:0}
+  .quiz__opt.correct{border-color:var(--good);background:rgba(61,211,192,.1)}
+  .quiz__opt.wrong{border-color:var(--bad);background:rgba(255,107,107,.1)}
+  .quiz__explain{
+    font-size:13.5px;color:var(--muted);margin-top:8px;padding:10px 13px;
+    background:var(--bg-2);border-radius:9px;border-left:2px solid var(--marigold);display:none;
+  }
+  .quiz__explain.show{display:block;animation:fade .3s}
+  .quiz__explain b{color:var(--text)}
+  .quiz__result{
+    text-align:center;font-family:'Space Grotesk';font-size:20px;font-weight:600;
+    margin-top:6px;padding:16px;border-radius:var(--radius);display:none;
+  }
+  .quiz__result.show{display:block;animation:fade .4s}
+  .quiz__result.pass{background:rgba(61,211,192,.1);color:var(--teal);border:1px solid var(--teal-dim)}
+  .quiz__result.tryagain{background:rgba(255,178,62,.1);color:var(--marigold);border:1px solid var(--marigold-dim)}
+
+  /* ---------- Certificate ---------- */
+  .cert{
+    background:linear-gradient(160deg,var(--surface-2),var(--bg-2));
+    border:1px solid var(--line);border-radius:18px;padding:34px 26px;text-align:center;
+    display:none;
+  }
+  .cert.show{display:block;animation:fade .5s}
+  .cert__seal{font-size:46px}
+  .cert h2{font-family:'Space Grotesk';font-size:26px;margin:10px 0 6px}
+  .cert h2 .accent{color:var(--marigold)}
+  .cert p{color:var(--muted);max-width:480px;margin:0 auto 18px}
+  .cert__name{
+    font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--teal);
+    border-bottom:1px solid var(--line);display:inline-block;padding:2px 30px 6px;margin:8px 0 18px;min-width:200px;
+  }
+  .cert__flags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0}
+  .cert__flag{font-family:'JetBrains Mono';font-size:11.5px;color:var(--teal);background:rgba(61,211,192,.08);border:1px solid var(--teal-dim);padding:5px 10px;border-radius:99px}
+  .nameinput{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:10px;color:var(--text);
+    font:inherit;padding:12px 14px;width:100%;max-width:300px;margin:0 auto;display:block;text-align:center;
+  }
+  .nameinput:focus{outline:2px solid var(--marigold);outline-offset:1px}
+
+  .next{
+    margin-top:22px;text-align:left;background:var(--bg-2);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px 20px;
+  }
+  .next h3{font-family:'Space Grotesk';font-size:16px;color:var(--marigold);margin-bottom:8px}
+  .next ul{list-style:none;color:var(--muted);font-size:14.5px}
+  .next li{padding:5px 0 5px 26px;position:relative}
+  .next li::before{content:"🛡️";position:absolute;left:0}
+
+  .foot{text-align:center;color:var(--muted-2);font-size:13px;margin-top:34px;font-family:'JetBrains Mono'}
+
+  .locked{opacity:.55;pointer-events:none;filter:grayscale(.3)}
+  .lock-note{font-family:'JetBrains Mono';font-size:12.5px;color:var(--muted-2);text-align:center;padding:10px}
+
+  @media (max-width:520px){
+    .opts{grid-template-columns:1fr}
+    .task{padding:22px 17px}
+    .hero{padding:38px 0 20px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar__inner">
+    <div class="brand"><span class="dot"></span>Cyber Suraksha</div>
+    <div class="progress"><div class="progress__fill" id="bar"></div></div>
+    <div class="flagcount">🚩 <b id="flagN">0</b>/4 flags</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow">● Lab 01 · Computer Fundamentals</div>
+    <h1>Look <span class="accent">inside</span> the machine you use every day</h1>
+    <p>Before we learn to stay safe online, let's understand what we're protecting. This is a hands-on lab — you'll explore, build, and boot a computer yourself.</p>
+    <div class="hero__meta">
+      <span class="chip">⏱ <b>30 min</b></span>
+      <span class="chip">📶 Level: <b>Beginner</b></span>
+      <span class="chip">🚩 <b>4 flags</b> to collect</span>
+    </div>
+    <div class="mission-note">
+      <b>Why this matters 🇮🇳</b> — Most cyberattacks succeed not because computers are weak, but because people don't know how their device works. Understanding the inside of a computer is your <b>first shield</b>. Learn it, and you can spot what's normal and what's a threat. Let's begin.
+    </div>
+  </header>
+
+  <!-- TASK 1: EXPLORE -->
+  <section class="task" id="task1">
+    <div class="task__head">
+      <div class="task__num">1</div>
+      <div>
+        <div class="task__title">Meet the parts of a computer</div>
+      </div>
+    </div>
+    <div class="task__sub">Every computer — your laptop, your phone, an ATM, a bank server — is built from the same core parts. Tap each card to discover what it does. We'll compare each one to a part of the <strong>human body</strong>, because a computer is a lot like us.</div>
+    <div class="task__body">
+      <div class="grid" id="cards"></div>
+      <div class="hint" id="exploreHint">Tapped 0 of 6 — explore them all to earn your first flag.</div>
+      <div class="flag" id="flag1">
+        <span class="flag__ico">🚩</span>
+        <div class="flag__txt"><b>CYBER{c0re_c0mp0nents_unl0cked}</b><span>Flag captured — you now know the 6 building blocks. Copy it, collect it, keep going.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASK 2: MATCH -->
+  <section class="task locked" id="task2">
+    <div class="task__head">
+      <div class="task__num">2</div>
+      <div><div class="task__title">Match each body part to its computer twin</div></div>
+    </div>
+    <div class="task__sub">Time to test your memory. We'll show you a body part — you pick the matching computer component. Get them all to capture the flag.</div>
+    <div class="task__body" id="matchBody">
+      <div class="lock-note" id="lock2">🔒 Finish Task 1 to unlock this task.</div>
+    </div>
+  </section>
+
+  <!-- TASK 3: BOOT -->
+  <section class="task locked" id="task3">
+    <div class="task__head">
+      <div class="task__num">3</div>
+      <div><div class="task__title">Boot the computer to life</div></div>
+    </div>
+    <div class="task__sub">What really happens between pressing the power button and seeing your home screen? Press <strong>Power</strong> and watch the 5-step boot sequence run in real time.</div>
+    <div class="task__body" id="bootBody">
+      <div class="lock-note" id="lock3">🔒 Finish Task 2 to unlock this task.</div>
+    </div>
+  </section>
+
+  <!-- TASK 4: QUIZ -->
+  <section class="task locked" id="task4">
+    <div class="task__head">
+      <div class="task__num">4</div>
+      <div><div class="task__title">Recap quiz — prove your skills</div></div>
+    </div>
+    <div class="task__sub">Five real-life questions. Answer them all, hit check, and earn your final flag. There are explanations for every answer, so you learn even if you slip.</div>
+    <div class="task__body" id="quizBody">
+      <div class="lock-note" id="lock4">🔒 Finish Task 3 to unlock the quiz.</div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATE -->
+  <section class="cert" id="cert">
+    <div class="cert__seal">🎖️</div>
+    <h2>Lab Complete — <span class="accent">Cyber Suraksha</span></h2>
+    <p>You've gone from "I just use it" to "I understand it." That's a real shift. Add your name to your certificate:</p>
+    <input class="nameinput" id="certName" placeholder="Type your name" maxlength="40" aria-label="Your name">
+    <div class="cert__name" id="certNameOut">Your Name</div>
+    <div class="cert__flags" id="certFlags"></div>
+    <p>has successfully completed <b style="color:var(--text)">Inside a Computer System</b> and captured all 4 flags.</p>
+    <div class="next">
+      <h3>Your next shields 🛡️</h3>
+      <ul>
+        <li>The <b style="color:var(--text)">network card</b> connects your computer to the internet — that's the door attackers knock on. Next lab: how data travels safely.</li>
+        <li>Now that you know files live in <b style="color:var(--text)">storage</b>, you'll understand why backups protect you from ransomware.</li>
+        <li>You learned the <b style="color:var(--text)">boot process</b> — hackers sometimes target it. Knowing it means you can tell when something's wrong.</li>
+      </ul>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:22px">
+      <button class="btn btn--ghost" onclick="window.print()">🖨 Print / Save certificate</button>
+    </div>
+  </section>
+
+  <!-- <div class="foot">// Built for a more tech-savvy, cyber-safe India · Lab 01 of the Computer Fundamentals path</div>? -->
+
+</div>
+
+<script>
+/* ============ STATE ============ */
+const state = { flags:new Set(), explored:new Set() };
+const TOTAL_FLAGS = 4;
+
+function award(flagId){
+  if(state.flags.has(flagId)) return;
+  state.flags.add(flagId);
+  document.getElementById('flagN').textContent = state.flags.size;
+  document.getElementById('bar').style.width = (state.flags.size/TOTAL_FLAGS*100)+'%';
+}
+function unlock(taskId, lockId){
+  const t = document.getElementById(taskId);
+  t.classList.remove('locked');
+  const l = document.getElementById(lockId);
+  if(l) l.remove();
+}
+
+/* ============ DATA ============ */
+const COMPONENTS = [
+  {key:'cpu', icon:'🧠', name:'CPU', role:'The Brain', body:'Brain',
+   detail:'The Processor. It does all the thinking and calculating. Every single instruction — opening WhatsApp, doing a sum — passes through here.'},
+  {key:'ram', icon:'⚡', name:'RAM', role:'Short-term Memory', body:'Short-term memory',
+   detail:'Super-fast memory that holds what you are working on right now. But it forgets everything the moment power goes off — like a thought you didn\'t write down.'},
+  {key:'storage', icon:'💾', name:'Storage', role:'Long-term Memory', body:'Long-term memory',
+   detail:'The SSD or Hard Disk. It keeps your photos, files and apps safe even after you switch off. This is your computer\'s permanent memory.'},
+  {key:'mobo', icon:'🩻', name:'Motherboard', role:'Skeleton & Nerves', body:'Skeleton & nerves',
+   detail:'The big board everything plugs into. Like our skeleton and nervous system, it holds the parts together and lets them talk to each other.'},
+  {key:'psu', icon:'❤️', name:'Power Supply', role:'The Heart', body:'Heart',
+   detail:'The PSU. It pumps electricity to every part — just like the heart pumps blood. No power, no life.'},
+  {key:'gpu', icon:'🎨', name:'Graphics Card', role:'The Imagination', body:'Eyes & imagination',
+   detail:'The GPU. It draws everything you see on the screen — videos, games, photos. The part of the computer that "paints" pictures for your eyes.'}
+];
+
+/* ============ TASK 1: EXPLORE ============ */
+const cardsEl = document.getElementById('cards');
+COMPONENTS.forEach(c=>{
+  const b = document.createElement('button');
+  b.className='card'; b.setAttribute('aria-expanded','false');
+  b.innerHTML = `<span class="card__tag">tap +</span>
+    <div class="card__icon">${c.icon}</div>
+    <div class="card__name">${c.name}</div>
+    <div class="card__role">${c.role}</div>
+    <div class="card__detail">${c.detail}</div>`;
+  b.addEventListener('click',()=>{
+    const opening = !b.classList.contains('is-open');
+    b.classList.toggle('is-open');
+    b.setAttribute('aria-expanded', opening);
+    b.querySelector('.card__tag').textContent = opening ? 'got it ✓' : 'tap +';
+    if(opening){
+      state.explored.add(c.key);
+      const n = state.explored.size;
+      document.getElementById('exploreHint').textContent =
+        n<6 ? `Tapped ${n} of 6 — explore them all to earn your first flag.` : 'All 6 explored — flag captured! 🎉';
+      if(n===6){
+        document.getElementById('flag1').classList.add('show');
+        award('f1');
+        unlock('task2','lock2');
+        buildMatch();
+      }
+    }
+  });
+  cardsEl.appendChild(b);
+});
+
+/* ============ TASK 2: MATCH ============ */
+let matchQ = 0, matchScore = 0, matchOrder = [];
+function buildMatch(){
+  const body = document.getElementById('matchBody');
+  matchOrder = [...COMPONENTS].sort(()=>Math.random()-0.5);
+  body.innerHTML = `
+    <div class="match__q">
+      <div class="match__bodypart" id="mIcon"></div>
+      <div class="match__prompt">Which part is the computer's <span id="mBody"></span>?</div>
+    </div>
+    <div class="opts" id="mOpts"></div>
+    <div class="match__feedback" id="mFeed">&nbsp;</div>
+    <div class="match__score" id="mScore"></div>
+    <div class="flag" id="flag2">
+      <span class="flag__ico">🚩</span>
+      <div class="flag__txt"><b>CYBER{b0dy_t0_machine_matched}</b><span>You can now name every part from memory. Flag captured!</span></div>
+    </div>`;
+  renderMatch();
+}
+function renderMatch(){
+  const q = matchOrder[matchQ];
+  document.getElementById('mIcon').textContent = q.icon;
+  document.getElementById('mBody').textContent = q.body;
+  document.getElementById('mScore').textContent = `Question ${matchQ+1} of ${matchOrder.length} · Score ${matchScore}`;
+  const feed = document.getElementById('mFeed'); feed.textContent='\u00A0'; feed.className='match__feedback';
+  // build 4 options (correct + 3 random others)
+  const others = COMPONENTS.filter(c=>c.key!==q.key).sort(()=>Math.random()-0.5).slice(0,3);
+  const opts = [q,...others].sort(()=>Math.random()-0.5);
+  const wrap = document.getElementById('mOpts'); wrap.innerHTML='';
+  opts.forEach(o=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.innerHTML=`<span class="ic">${o.icon}</span> ${o.name} <span style="color:var(--muted);font-size:12px">— ${o.role}</span>`;
+    btn.addEventListener('click',()=>pickMatch(o,q,btn,wrap));
+    wrap.appendChild(btn);
+  });
+}
+function pickMatch(chosen, correct, btn, wrap){
+  [...wrap.children].forEach(b=>b.disabled=true);
+  const feed = document.getElementById('mFeed');
+  if(chosen.key===correct.key){
+    btn.classList.add('correct'); matchScore++;
+    feed.textContent='✓ Correct!'; feed.className='match__feedback good';
+  }else{
+    btn.classList.add('wrong');
+    [...wrap.children].forEach(b=>{ if(b.textContent.includes(correct.name)) b.classList.add('correct'); });
+    feed.textContent=`✗ That was the ${correct.name}.`; feed.className='match__feedback bad';
+  }
+  setTimeout(()=>{
+    matchQ++;
+    if(matchQ<matchOrder.length){ renderMatch(); }
+    else{
+      document.getElementById('mOpts').innerHTML='';
+      document.getElementById('mIcon').textContent='🏁';
+      document.querySelector('#matchBody .match__prompt').innerHTML=`Done! You scored <span>${matchScore}/${matchOrder.length}</span>`;
+      document.getElementById('mScore').textContent = matchScore>=4 ? 'Great memory! 🎉' : 'Good effort — scroll up to revisit Task 1 any time.';
+      document.getElementById('flag2').classList.add('show');
+      award('f2');
+      unlock('task3','lock3');
+      buildBoot();
+    }
+  }, 1100);
+}
+
+/* ============ TASK 3: BOOT ============ */
+const BOOT_STEPS = [
+  {l:'<span class="step">[1] POWER</span>   Power button pressed → PSU sends electricity to all parts.', b:'Like waking up: oxygen reaches the body, the heart starts pumping.'},
+  {l:'<span class="step">[2] FIRMWARE</span> UEFI firmware starting... <span class="ok">OK</span>  <span class="dim">(older computers call this BIOS)</span>', b:'Organs switch on, but the brain is not conscious yet.'},
+  {l:'<span class="step">[3] POST</span>    Power-On Self Test: CPU <span class="ok">OK</span> · RAM <span class="ok">OK</span> · Storage <span class="ok">OK</span>', b:'A quick body check — is everything working? If not, an alarm beeps.'},
+  {l:'<span class="step">[4] BOOT DEV</span> Searching boot order... found Operating System on Disk 0.', b:'Finding where your "consciousness" lives.'},
+  {l:'<span class="step">[5] BOOTLOADER</span> Loading OS into RAM... handing control to the system. <span class="ok">READY</span>', b:'You wake up fully conscious. The computer shows your home screen.'}
+];
+function buildBoot(){
+  const body=document.getElementById('bootBody');
+  body.innerHTML=`
+    <div class="term">
+      <div class="term__bar"><span class="b r"></span><span class="b y"></span><span class="b g"></span><span class="t">boot-sequence — /dev/computer</span></div>
+      <div class="term__screen" id="termScreen"><span class="dim">System is off. Press the power button to begin.</span><span class="cursor"></span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn--power" id="powerBtn">⏻ Press Power</button>
+    </div>
+    <div class="flag" id="flag3">
+      <span class="flag__ico">🚩</span>
+      <div class="flag__txt"><b>CYBER{b00t_sequence_c0mplete}</b><span>You watched a computer come to life, step by step. Flag captured!</span></div>
+    </div>`;
+  document.getElementById('powerBtn').addEventListener('click',runBoot,{once:true});
+}
+function runBoot(){
+  const screen=document.getElementById('termScreen');
+  const btn=document.getElementById('powerBtn');
+  btn.disabled=true; btn.textContent='⏳ Booting...';
+  screen.innerHTML='';
+  const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let i=0;
+  function nextStep(){
+    if(i>=BOOT_STEPS.length){
+      const done=document.createElement('div');
+      done.className='term__line'; done.style.marginTop='10px';
+      done.innerHTML='<span class="ok">✓ Welcome. Your computer is ready to use.</span><span class="cursor"></span>';
+      screen.appendChild(done);
+      btn.textContent='✓ Booted'; 
+      document.getElementById('flag3').classList.add('show');
+      award('f3'); unlock('task4','lock4'); buildQuiz();
+      return;
+    }
+    const s=BOOT_STEPS[i];
+    const line=document.createElement('div'); line.className='term__line'; line.innerHTML=s.l;
+    screen.appendChild(line);
+    const bod=document.createElement('div'); bod.className='term__line';
+    bod.innerHTML='        <span class="body">↳ '+s.b+'</span>';
+    screen.appendChild(bod);
+    screen.scrollTop=screen.scrollHeight;
+    i++;
+    setTimeout(nextStep, reduce?60:950);
+  }
+  nextStep();
+}
+
+/* ============ TASK 4: QUIZ ============ */
+const QUIZ=[
+  {q:'You are typing an important document and the power suddenly goes off. You hadn\'t saved. Your work is gone. Which part is responsible?',
+   opts:['Storage (SSD/Hard Disk)','RAM — the short-term memory','The CPU','The Power Supply'],
+   correct:1,
+   ex:'<b>RAM holds work-in-progress only.</b> It forgets everything when power is lost. That is exactly why "Save" matters — saving moves your work into Storage, which keeps it permanently.'},
+  {q:'Your friend says the computer\'s "brain" is slow. Which component are they really talking about?',
+   opts:['The CPU (Processor)','The Graphics Card','The Motherboard','The RAM'],
+   correct:0,
+   ex:'<b>The CPU is the brain.</b> It processes every instruction. A faster CPU generally means a faster-thinking computer.'},
+  {q:'When a computer starts, it runs a quick "is everything working?" check. What is this check called?',
+   opts:['Bootloader','POST (Power-On Self Test)','UEFI','Firmware'],
+   correct:1,
+   ex:'<b>POST = Power-On Self Test.</b> It checks that the CPU, RAM and storage are present and healthy before the system loads — like a body doing a morning check.'},
+  {q:'You hear that "BIOS" is old and most computers now use a modern replacement. What is that replacement called?',
+   opts:['CPU','UEFI','GPU','RAM'],
+   correct:1,
+   ex:'<b>UEFI</b> is the modern firmware that has largely replaced BIOS. Both do the same job: waking up the components when you switch on.'},
+  {q:'You switch off your laptop for the night. In the morning, your saved photos are still there. Where were they kept overnight?',
+   opts:['In RAM','In the CPU','In Storage (SSD/Hard Disk)','In the Power Supply'],
+   correct:2,
+   ex:'<b>Storage keeps data even with no power.</b> This is also why backing up your storage protects you — if malware locks your device, a backup means you don\'t lose everything.'}
+];
+function buildQuiz(){
+  const body=document.getElementById('quizBody');
+  let html='';
+  QUIZ.forEach((item,qi)=>{
+    html+=`<div class="quiz__q"><div class="quiz__qtext"><span class="qn">Q${qi+1}</span>${item.q}</div>`;
+    item.opts.forEach((o,oi)=>{
+      html+=`<label class="quiz__opt"><input type="radio" name="q${qi}" value="${oi}"><span>${o}</span></label>`;
+    });
+    html+=`<div class="quiz__explain" id="ex${qi}"><b>Answer:</b> ${item.ex}</div></div>`;
+  });
+  html+=`<div class="btn-row" style="justify-content:center"><button class="btn" id="checkQuiz">Check my answers</button></div>
+    <div class="quiz__result" id="quizResult"></div>
+    <div class="flag" id="flag4">
+      <span class="flag__ico">🚩</span>
+      <div class="flag__txt"><b>CYBER{fundament4ls_master}</b><span>Final flag captured. You understand the machine. Onward!</span></div>
+    </div>`;
+  body.innerHTML=html;
+  document.getElementById('checkQuiz').addEventListener('click',gradeQuiz);
+}
+function gradeQuiz(){
+  let score=0, answered=0;
+  QUIZ.forEach((item,qi)=>{
+    const chosen=document.querySelector(`input[name="q${qi}"]:checked`);
+    const labels=document.querySelectorAll(`input[name="q${qi}"]`);
+    labels.forEach(inp=>{
+      inp.disabled=true;
+      const lab=inp.closest('.quiz__opt');
+      if(parseInt(inp.value)===item.correct) lab.classList.add('correct');
+      if(chosen && inp===chosen && parseInt(inp.value)!==item.correct) lab.classList.add('wrong');
+    });
+    document.getElementById('ex'+qi).classList.add('show');
+    if(chosen){ answered++; if(parseInt(chosen.value)===item.correct) score++; }
+  });
+  const res=document.getElementById('quizResult');
+  res.classList.add('show');
+  if(score>=4){
+    res.classList.add('pass'); res.classList.remove('tryagain');
+    res.textContent=`🎉 ${score}/5 — You passed! Flag unlocked.`;
+    document.getElementById('flag4').classList.add('show');
+    award('f4');
+    finish();
+  }else{
+    res.classList.add('tryagain'); res.classList.remove('pass');
+    res.textContent=`You scored ${score}/5. Read the green answers above, then try again to earn the flag.`;
+    document.getElementById('checkQuiz').textContent='Try again';
+    document.getElementById('checkQuiz').onclick=()=>buildQuiz();
+  }
+}
+
+/* ============ CERTIFICATE ============ */
+function finish(){
+  const cert=document.getElementById('cert');
+  cert.classList.add('show');
+  const flags=['CYBER{c0re_c0mp0nents_unl0cked}','CYBER{b0dy_t0_machine_matched}','CYBER{b00t_sequence_c0mplete}','CYBER{fundament4ls_master}'];
+  document.getElementById('certFlags').innerHTML = flags.map(f=>`<span class="cert__flag">🚩 ${f}</span>`).join('');
+  const inp=document.getElementById('certName'), out=document.getElementById('certNameOut');
+  inp.addEventListener('input',()=>{ out.textContent = inp.value.trim() || 'Your Name'; });
+  setTimeout(()=>cert.scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+</script>
+</body>
+</html>
