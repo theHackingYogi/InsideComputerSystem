@@ -1,1 +1,1 @@
-# InsideComputerSystem
+This laboratory environment is designed to provide foundational, hands-on experience for students embarking on their cybersecurity careers. The curriculum utilizes an interactive, gamified approach to facilitate experiential learning, ensuring students develop a practical and comprehensive understanding of core security concepts.
